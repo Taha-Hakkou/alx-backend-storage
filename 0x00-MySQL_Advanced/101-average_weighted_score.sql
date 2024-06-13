@@ -1,6 +1,7 @@
 -- 101-average_weighted_score.sql
 -- creates a stored procedure ComputeAverageWeightedScoreForUsers
 -- that computes and store the average weighted score for all students
+DELIMITER $$
 CREATE PROCEDURE ComputeAverageWeightedScoreForUsers ()
 BEGIN
 	UPDATE users, 
@@ -12,3 +13,5 @@ BEGIN
     	SET users.average_score = WA.w_avg 
     	WHERE users.id = WA.id;
 END
+$$
+DELIMITER;
