@@ -4,17 +4,18 @@ import redis
 import uuid
 from typing import Union, Callable, Optional, Any
 from functools import wraps
-Data = Union[str | bytes | int | float]
 
 
 def count_calls(method: Callable) -> Callable:
     """ count_calls decorator """
     @wraps(method)
-    def incrementer(self: Any, *args, **kwargs) -> Data:
+    def incrementer(self: Any, *args,
+                    **kwargs) -> Union[str | bytes | int | float]:
         """ increments the calls count """
         self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return incrementer
+
 
 def call_history(function: Callable) -> Callable:
     """ call_history decorator """
@@ -25,6 +26,7 @@ def call_history(function: Callable) -> Callable:
         self._redis.rpush(f'{function.__qualname__}:outputs', output)
         return output
     return wrapper
+
 
 def replay(fn: Callable) -> None:
     """ displays the history of calls of a particular function """
@@ -41,20 +43,21 @@ def replay(fn: Callable) -> None:
 
 class Cache:
     """ Cache class """
-    def __init__(self):
+    def __init__(self: Any):
         """ creates a redis cache client """
         self._redis = redis.Redis()
         self._redis.flushdb()
 
     @count_calls
     @call_history
-    def store(self, data: Data) -> str:
+    def store(self, data: Union[str | bytes | int | float]) -> str:
         """ stores data in cache, and returns its key """
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Data:
+    def get(self: Any, key: str,
+            fn: Optional[Callable] = None) -> Union[str | bytes | int | float]:
         """ returns data in the desired format """
         value = self._redis.get(key)
         if not value:
@@ -67,10 +70,10 @@ class Cache:
             return fn(value)
         return value
 
-    def get_str(self, data: bytes) -> str:
+    def get_str(self: Any, data: bytes) -> str:
         """ converts bytes into string """
         return data.decode('utf-8')
 
-    def get_int(self, data: bytes) -> int:
+    def get_int(self: Any, data: bytes) -> int:
         """ converts bytes into int """
         return int(data)
